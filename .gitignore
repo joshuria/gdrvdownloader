@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vscode
+.vscode
+
+# Generated
+profile
+download
+client_secrets.json
+tokens
+output
