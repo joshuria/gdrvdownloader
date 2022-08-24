@@ -228,16 +228,18 @@ class GoogleDriveClient:
         }
         if not trashed:
             param['q'] = 'trashed = false'
-        if sharedType == 'owned':
-            if 'q' in param:
-                param['q'] += ' and \'me\' in owners'
-            else:
-                param['q'] = '\'me\' in owners'
-        elif sharedType == 'shared':
-            if 'q' in param:
-                param['q'] += ' and (not \'me\' not in owners)'
-            else:
-                param['q'] = 'not \'me\' in owners'
+        if not driveId:
+            # My Drive only, shared drives use 'me' in owners will return nothing but just root
+            if sharedType == 'owned':
+                if 'q' in param:
+                    param['q'] += ' and \'me\' in owners'
+                else:
+                    param['q'] = '\'me\' in owners'
+            elif sharedType == 'shared':
+                if 'q' in param:
+                    param['q'] += ' and (not \'me\' not in owners)'
+                else:
+                    param['q'] = 'not \'me\' in owners'
         if driveId:
             param['driveId'] = driveId
             param['includeItemsFromAllDrives'] = True

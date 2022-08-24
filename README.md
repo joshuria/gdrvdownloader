@@ -1,13 +1,15 @@
-# Google Drive Downloader
+# Google Drive Exporter
 Export your Google Drive by Google Drive API v3.
 
 This implementation supports:
   - Export all drives, include *My Drive* and other shared drives.
   - Export all files in *Shared with me*.
   - Export all files in trash.
+  - Support Google Docs export.
   - Export all files (include folder, files, links) to CSV.
   - Use gzip when downloading.
-  - Checking file integrity.
+  - Checking file integrity after download.
+  - Prevent unnecesary download if file alread exists and matches.
 
 Other approach to export Google Drive:
   - [Google Takeout](https://takeout.google.com/)
@@ -75,7 +77,8 @@ Other approach to export Google Drive:
 
       > Exported files will put in `OUTPUT_ROOT_PATH/USER_ACCOUNT/Drive_Name`.
 
-  - `--sharedType {shared, owned, both}`: specify shared files to export or not.
+  - `--sharedType {shared, owned, both}`: specify shared files to export or not. This option is
+      ignored when fetching files from shared drives.
       * **shared**: only export shared files, i.e. only files in *Shared with me* will be exported.
       * **owned**: only files owned by *<USER_ACCOUNT>* will be exported.
       * **both**: both shared and account owned files will be exported.
@@ -162,6 +165,11 @@ Final generated files are:
 
 # FAQ
 
+
+# Limitation
+  - [Google Drive API v3] the `--sharedType` is ignored when query files in shared drives. Add this
+      filter the API will return just root folder and no files.
+ 
 
 # Known Issues
   * *Coggle* generated mind map files require manually export in Coggle.

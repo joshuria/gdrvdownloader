@@ -12,21 +12,18 @@ def createParser() -> argparse.ArgumentParser:
         """
         gdexporter: Google Drive Exporter.
 
-        2 approaches are implemented:
-          - selenium: emulate user action on browser to download.
-          - gde: download through Google Drive API v3.
+        The following functions are supported:
+          - Export all drives, include My Drive and Shared Drives.
+          - Export files in Share With Me.
+          - Export files in trash.
+          - Check downloaded file with MD5 hash.
+          - Set file modified time and access time align to files on Google Drive.
+          - Output file information summary into CSV.
+          - Concurrent download files.
 
-        For selenium approach, the following browsers are supported:
-          - Chrome, chromium, edge, or other chromium related.
-          - Firefox
-        Note that this implementation is NOT stable and maybe failed on web page compressing flow.
-
-        For gde approach, user is required to create personal `client_secrets.json` on GCP to enable
+        Requirement: user is required to create personal `client_secrets.json` on GCP to enable
         Google Drive API. Please refer to our github readme for help.
         """)
-    parser.add_argument(
-        '--engine', '-e', choices=['selenium', 'gde'], required=True,
-        help='Download by selenium or Google Drive API v3.')
     parser.add_argument(
         '--output', '-o', type=str, default='output',
         help='Path to downloaded files output root folder. Default is `./output`.')

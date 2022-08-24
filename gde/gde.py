@@ -7,7 +7,7 @@ import json
 import os
 from pprint import pprint
 import time
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 import pandas as pd
 from tqdm.auto import tqdm
 import colorama as color
@@ -354,7 +354,7 @@ def __updateResultMessage(
         dfTable[result.file.driveId].loc[result.i, 'status'] = 'Fail'
         dfTable[result.file.driveId].loc[result.i, 'message'] = result.message
         msg = f'Retry: {result.message}' if canRetry else f'Fail: {result.message}'
-        return '⛈ ' + color.Style.BRIGHT + f'{duration} ' + color.Fore.RESET + \
+        return '⛈ ' + color.Style.BRIGHT + color.Fore.WHITE + f'{duration} ' + color.Style.RESET_ALL + \
             msg.ljust(msgLength)[:msgLength] + \
             color.Style.BRIGHT + color.Fore.BLUE + f'({fileId}) ' + color.Style.RESET_ALL + \
             color.Style.BRIGHT + color.Fore.YELLOW + f'{path}' + color.Style.RESET_ALL
@@ -500,9 +500,8 @@ def process(
     for sharedDrive in client.sharedDrives:
         dfTable[sharedDrive.driveId].to_csv(
             os.path.join(outputRoot, f'{sharedDrive.name}.csv'), encoding='utf-8', index=False)
-    failDf = pd.concat([df.loc[df['status'].str == 'Fail'] for df in dfTable.values()])
-    if len(failDf) > 0:
-        failDf.to_csv(os.path.join(outputRoot, 'fail.csv'), index=None)
+    failDf = pd.concat([df.loc[df['status'] == 'Fail'] for df in dfTable.values()])
+    failDf.to_csv(os.path.join(outputRoot, 'fail.csv'), index=None)
 
     print('Complete')
     print(f'Failed files: {len(failDf)}')
