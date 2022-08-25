@@ -85,7 +85,24 @@ $ pip -V       # Output: pip a.b.c from <a path> (python 3.x.x)
 ## 可用選項
 
   - `-h`, `--help`: 顯示簡易說明。
-  - `-u 使用者帳號`, `--u 使用者帳號`: **必填** 指定要處理的 Google 帳號。 
+  - `-u 使用者帳號`, `--u 使用者帳號`: **必填** 指定要處理的 Google 帳號。 $a
+  - 
+  - `--downloadOnly`: 只使用目前在 `輸出位置/使用者帳號` 內所儲存的檔案資訊 csv，重新檢查並下載檔案。這個選項可用在
+    試下載上次失敗的檔案。
+  - `--fileInfoCsv 檔案資訊.csv`: 指定存有所有要匯出檔案資訊的 CSV 位置。這個選項也同時會啟用 `--downloadOnly`，
+    並且忽略 `--sharedType`。雲端硬碟的名稱和 ID 將會從這個檔案裡取得。
+
+    > **注意**: 這個選項將會假設檔案所屬的使用者帳號和由 `-u` 指定的帳號相同，不會做其他的檢查。
+
+  - `--ignoreDrive 硬碟名稱A 硬碟名稱B "有空白 硬碟名稱C" ...`: 要忽略的雲端硬碟名稱。如果不想匯出 *我的雲端硬碟*
+    ，請使用 `--ignoreDrive MyDrive`。
+
+  - `--includeTrashed`: 匯出時包含在垃圾桶裡的檔案。  
+
+    > **注意**: 在垃圾桶裡的檔案將會儲存到 `輸出位置/使用者帳號/雲端硬碟名稱-Trashed` 裡。
+
+  - `-j 平行下載檔案數量`, `--job 平行下載檔案數量`: 最大可同時下載的檔案數量，預設值為 8 。
+  - `--noMd5`: 不檢查檔案 MD5。
   - `-o 輸出位置`, `--output 輸出位置`: 匯出的檔案會儲存到這個路徑底下，預設值是 `./output`。
 
     > 實際上會在這這位置對每個帳號和雲端硬碟名稱再開各別的資料夾，也就是說匯出的檔案會存在
@@ -102,10 +119,67 @@ $ pip -V       # Output: pip a.b.c from <a path> (python 3.x.x)
 
     > **注意**: 在處理 *共用雲端硬碟* 時，由於 Google Drive API 的限制，這個參數的設定會被忽略。
 
-  - `--ignoreDrive 硬碟名稱A 硬碟名稱B "有空白 硬碟名稱C" ...`: 要忽略的雲端硬碟名稱。如果不想匯出 *我的雲端硬碟*
-    ，請使用 `--ignoreDrive MyDrive`。
-  - `--downloadOnly`: 只使用目前在 `輸出位置/使用者帳號` 內所儲存的檔案資訊 csv，重新檢查並下載檔案。這個選項可用在
-    試下載上次失敗的檔案。
-  - `--noMd5`: 不檢查檔案 MD5。
-  - `--fileInfoCsv 檔案資訊.csv`: 指定存有所有要匯出檔案資訊的 CSV 位置。這個選項也同時會啟用 `--downloadOnly`，
-    並且忽略 `--sharedType`。
+## 使用範例
+### 一般使用
+以下指令會將帳號 `my.account@g2.school.edu` 裡、擁有者是 *我*、不在垃圾桶裡的所有檔案匯出到
+`./output/my.account@g2.school.edu` 裡，並且同時最多有 *4* 個檔案可平行下載。
+
+```sh
+    python gdexporter.py -u my.account@g2.school.edu -j 4
+```
+
+### 同時匯出自己與來自其他帳號分享的所有檔案
+以下指令會將帳號 `my.account@g2.school.edu` 裡，包含 *與我分享* 在內，所有雲端硬碟裡不在垃圾桶裡的檔案全部匯出到
+`./output/my.account@g2.school.edu` 裡，並且同時最多有 *4* 個檔案可平行下載。
+
+```sh
+    python gdexporter.py -u my.account@g2.school.edu -j 4 --sharedType both
+```
+
+### 使用前一次匯出的檔案資訊紀錄，單純檢查並下載紀錄中的檔案
+以下指令將會檢查所有在 `./output/my.account@g2.school.edu/<雲端硬碟>.csv` 裡的匯出紀錄，檢查所有紀錄並下載缺少或
+MD5 不相同的檔案。
+
+```sh
+    # 假設帳號 my.account@g2.school.edu 有名稱為 MyDrive, ShareDriveA, ShareDriveB 3 個雲端硬碟
+    # 以下指令會使用
+    #    - ./output/my.account@g2.school.edu/MyDrive.csv
+    #    - ./output/my.account@g2.school.edu/ShareDriveA.csv
+    #    - ./output/my.account@g2.school.edu/ShareDriveB.csv
+    # 這 3 個 csv 內紀錄的檔案清單，檢查並下載所有檔案
+    python gdexporter.py -u my.account@g2.school.edu --downloadOnly
+```
+
+## 輸出資料夾結構
+假設使用者 `my.account@g2.school.edu` 有 *我的雲端硬碟* 和 1 個名稱為 *ShareDriveA* 的分享雲端硬碟，並且在匯出
+時使用預設的輸出位置，輸出資料夾結構將會是:
+
+```text
+    output
+        |--- my.account@g2.school.edu
+                |--- MyDrive.csv      # 存有 "我的雲端硬碟" 所有檔案資訊的 CSV
+                |--- ShareDriveA.csv  # 存有分享雲端硬碟 ShareDriveA 所有檔案資訊的 CSV
+                |--- MyDrive          # 存有 "我的雲端硬碟" 內，擁有者是 "我"，而且不在垃圾桶內的檔案
+                |       |--- <files>
+                |--- MyDrive-Shared   # 存有 "我的雲端硬碟" 內，由其他人分享，而且不在垃圾桶內的檔案
+                |       |--- <files>
+                |--- MyDrive-Trash    # 存有 "我的雲端硬碟" 內，所有在垃圾桶內的檔案
+                |       |--- <files>
+                |--- ShareDriveA      # 存有分享雲端硬碟 ShareDriveA 內，所有不在垃圾桶內的檔案
+                |       |--- <files>
+                |--- ShareDriveA-Trash # 存有分享雲端硬碟 ShareDriveA 內，所有在垃圾桶內的檔案 
+                |       |--- <files>
+```
+
+
+# 限制
+  - `--sharedType` 在處理分享雲端硬碟時會被忽略，因為 Google Drive 架構上在鈩享雲端硬碟內的檔案擁有者是所屬機構的
+    管理者，檔案都會是被分享的。因此 Google Drive API 在查尋分享雲端硬碟內的檔案時，不支援這個篩選條件。
+
+
+# 已知問題
+  * [Coggle](https://coggle.it/) 的檔案不能被 API 匯出，必須使用者自行到 Coggle 內處理。
+  * 我們沒有檢查目前系統上的可用硬碟空䦔是否足夠下載所有檔案。
+  * 目前針對 Google Drive API rate limit 的處理太過簡單。
+  * 目前實作的方式可能會占用比較多的記憶體。
+  

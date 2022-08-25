@@ -71,11 +71,27 @@ Other approach to export Google Drive:
 
   - `-h`, `--help`: show simple help message.
   - `-u <USER_ACCOUNT>`, `--user <USER_ACCOUNT>`: **Required** user account to export.
+  - `--downloadOnly`: ignore fetching files from server and use previous fetched file info CSV.
+        This option is for retrying previous failed files.
+  - `--fileInfoCsv FILEINFO_CSV`: manually give *<FILEINFO_CSV>* as file info. This option also
+      enable `--downloadOnly` and ignore `--sharedType`. The drive name and ID are retrieved from
+      *<FILEINFO_CSV>*.
+      
+      > User account who generates *<FILEINFO_CSV>* is assumed matches to given authed
+      > *<USER_ACCOUNT>*.
+  - `--includeTrashed`: also include trashed files.
+
+      > Note that trashed files will be put in
+      > `<OUTPUT_ROOT_PATH>/<USER_ACCOUNT>/<DRIVE_NAME>-Trash`.
+  - `--ignoreDrive DRIVE_A DRIVE_B ...`: drive name to be ignored. Use **MyDrive** for account
+        personal drive (*My Drive* in Google drive page). This option is useful in GSuite, G2, or
+        Google Workspace shared drives.
+  - `-j N`, `--job N`: the number of concurrent download jobs. Default is 8.
+  - `--noMd5`: skip file MD5 checksum verification.
   - `-o <OUTPUT_ROOT_PATH>`, `--output <OUTPUT_ROOT_PATH>`: output root path. Default value is
       `./output`.  
 
       > Exported files will put in `OUTPUT_ROOT_PATH/USER_ACCOUNT/Drive_Name`.
-
   - `--sharedType {shared, owned, both}`: specify shared files to export or not. This option is
       ignored when fetching files from shared drives. Default is **owned**.
       * **shared**: only export shared files, i.e. only files in *Shared with me* will be exported.
@@ -88,49 +104,52 @@ Other approach to export Google Drive:
       > **Warning**: this parameter is ignored when exporting shared drives due to limitation of
       > Google Drive API.
 
-  - `--ignoreDrive DRIVE_A DRIVE_B ...`: drive name to be ignored. Use **MyDrive** for account
-        personal drive (*My Drive* in Google drive page). This option is useful in GSuite, G2, or
-        Google Workspace shared drives.
-  - `--downloadOnly`: ignore fetching files from server and use previous fetched file info CSV.
-        This option is for retrying previous failed files.
-  - `--noMd5`: skip file MD5 checksum verification.
-  - `--fileInfoCsv FILEINFO_CSV`: manually give *<FILEINFO_CSV>* as file info. This option also
-      enable `--downloadOnly`. The drive name and ID are retrieved from *<FILEINFO_CSV>*.
-      
-      > User account who generates *<FILEINFO_CSV>* is assumed matches to given authed
-      > *<USER_ACCOUNT>*.
-
-  - `-j N`, `--job N`: the number of concurrent download jobs. Default is 8.
-  - `--includeTrashed`: also include trashed files.
-
-      > Note that trashed files will be put in
-      > `<OUTPUT_ROOT_PATH>/<USER_ACCOUNT>/<DRIVE_NAME>-Trashed`.
 
 ## Sample Usage
+### Normal use:
+This will export drive owned by `my.account@g2.school.edu` with only owner is *me* files by
+*4* download jobs.
 
-  * Normal use:
-    This will export drive owned by `my.account@g2.school.edu` with only owner is *me* files by
-    **4** download jobs.
+```sh
+    python gdexporter.py -u my.account@g2.school.edu -j 4
+```
 
-    ```sh
-        python gdexporter.py -u my.account@g2.school.edu -j4
-    ```
+### Download with shared files:
+This will export drive owned by `my.account@g2.school.edu` with both shared and owned files by
+**4** download jobs.
 
-  * Download with shared files:
-    This will export drive owned by `my.account@g2.school.edu` with both shared and owned files by
-    **4** download jobs.
+```sh
+    python gdexporter.py -u my.account@g2.school.edu -j4 --sharedType both
+```
 
-    ```sh
-        python gdexporter.py -u my.account@g2.school.edu -j4 --sharedType both
-    ```
+### Retry previous failed export:
+This will checking and download owned by `my.account@g2.school.edu` only owner is *me* files by
+**4** download jobs.
 
-  * Retry previous failed export:
-    This will checking and download owned by `my.account@g2.school.edu` only owner is *me* files by
-    **4** download jobs.
+```sh
+    python gdexporter.py -u my.account@g2.school.edu --downloadOnly -j4
+```
 
-    ```sh
-        python gdexporter.py -u my.account@g2.school.edu --downloadOnly -j4
-    ```
+## Output Folder Structure
+Assume user account has *My Drive* and 1 shared drive with name *ShareDriveA*, output folder will
+be:
+
+```text
+    <OUTPUT_ROOT>
+        |--- <USER_ACCOUNT>
+                |--- MyDrive.csv      # CSV for all files in My Drive
+                |--- ShareDriveA.csv  # CSV for all files in ShareDriveA
+                |--- MyDrive          # Folder for files in My Drive owned by "me", not trashed
+                |       |--- <files>
+                |--- MyDrive-Shared   # Folder for files in My Drive shared by others, not trashed
+                |       |--- <files>
+                |--- MyDrive-Trash    # Folder for files in My Drive but has been trashed
+                |       |--- <files>
+                |--- ShareDriveA      # Folder for files in ShareDriveA owned by "me", not trashed
+                |       |--- <files>
+                |--- ShareDriveA-Trash  # Folder for files in ShareDriveA but has been trashed
+                |       |--- <files>
+```
 
 # Implementation
 The entire export flow includes 3 main steps:
@@ -174,7 +193,7 @@ Final generated files are:
  
 
 # Known Issues
-  * *Coggle* generated mind map files require manually export in Coggle.
+  * [Coggle](https://coggle.it/) generated mind map files require manually export in Coggle.
   * We do not check if local system has enough disk space to store exported files.
   * Current rate limit handling is too simple (just sleep for a long while).
   * This implementation is not memory efficient.
