@@ -122,7 +122,6 @@ def __checkFile(
                 m = md5(path)
                 if m != file.md5:
                     data = __toDict(file, 'Download', 'Pending', 'MD5 not match')
-                    print(f'{file.name}: real: {m}, in csv: {file.md5}')
                     needDownload = True
                 else:
                     data = __toDict(file, 'Skip', 'OK', 'MD5 match')
@@ -364,7 +363,7 @@ def __updateResultMessage(
 def process(
     user: str, outputRoot: str, job: int,
     downloadOnly: bool, noMd5: bool, fileInfoCsv: str, includeTrashed: bool,
-    sharedType: str, ignoredDrives: List[str],
+    sharedType: str, ignoredDrives: List[str], maxRetry: int,
 ):
     """The implementation. """
     client = GoogleDriveClient(user)
@@ -417,10 +416,10 @@ def process(
         '|{bar}{r_bar}'
     progress = tqdm(
         desc='Total', total=len(downloadList), ascii=True, dynamic_ncols=True, bar_format=fmt)
-    # unit='iB', unit_scale=True
     downloader = Downloader(client.authId, outputRoot, job)
     completedCount = 0
-    retrySet: Dict[str, FileInfo] = {}
+    # Retry table, map from file id to retry remain count
+    retryTable: Dict[str, int] = {}
     # Submit all taskes
     futures = [
         downloader.download(
@@ -437,15 +436,17 @@ def process(
             canRetry = True
             # Retry failed
             if not result.result:
+                # Download fail
                 file = result.file
-                if file.id in retrySet:
-                    # Already retried
-                    del retrySet[file.id]
-                    canRetry = False
+                if file.id in retryTable:
+                    retryTable[file.id] -= 1
+                    if retryTable[file.id] <= 0:
+                        del retryTable[file.id]
+                        canRetry = False
                 else:
                     # Possible to retry
                     retryList.append((file, result.i))
-                    retrySet[file.id] = file
+                    retryTable[file.id] = maxRetry
             msg = __updateResultMessage(result, dfTable, canRetry)
             progress.write(msg)
         completedCount += len(done)

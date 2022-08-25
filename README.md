@@ -87,6 +87,7 @@ Other approach to export Google Drive:
         personal drive (*My Drive* in Google drive page). This option is useful in GSuite, G2, or
         Google Workspace shared drives.
   - `-j N`, `--job N`: the number of concurrent download jobs. Default is 8.
+  - `--maxRetry N`: max number of download retyr. Default is 3.
   - `--noMd5`: skip file MD5 checksum verification.
   - `-o <OUTPUT_ROOT_PATH>`, `--output <OUTPUT_ROOT_PATH>`: output root path. Default value is
       `./output`.  
@@ -190,6 +191,7 @@ Final generated files are:
 # Limitation
   - [Google Drive API v3] the `--sharedType` is ignored when query files in shared drives. Add this
       filter the API will return just root folder and no files.
+  - We do not handle file revision and always download the final version.
  
 
 # Known Issues

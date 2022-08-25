@@ -49,6 +49,9 @@ def createParser() -> argparse.ArgumentParser:
         '--job', '-j', type=int, required=False, default=8,
         help='Max concurrent download job. Default is 8.')
     grp.add_argument(
+        '--maxRetry', type=int, required=False, default=3,
+        help='Max download retry. Default is 3.')
+    grp.add_argument(
         '--noMd5', action='store_true', required=False,
         help='Skip MD5 checking.')
     grp.add_argument(
@@ -66,12 +69,13 @@ if __name__ == '__main__':
         args.fileInfoCsv = os.path.join(args.output, args.user, args.fileInfoCsv)
 
     process(
-        args.user,
-        args.output,
-        args.job,
-        args.downloadOnly,
-        args.noMd5,
-        args.fileInfoCsv,
-        args.includeTrashed,
-        args.sharedType,
-        args.ignoreDrive)
+        user=args.user,
+        outputRoot=args.output,
+        job=args.job,
+        downloadOnly=args.downloadOnly,
+        noMd5=args.noMd5,
+        fileInfoCsv=args.fileInfoCsv,
+        includeTrashed=args.includeTrashed,
+        sharedType=args.sharedType,
+        ignoredDrives=args.ignoreDrive,
+        maxRetry=args.maxRetry)
