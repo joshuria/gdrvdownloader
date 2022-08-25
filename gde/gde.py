@@ -396,6 +396,9 @@ def process(
 
             if downloadOnly:
                 path = os.path.join(outputRoot, driveName)
+                if (not os.path.exists(path)) or (not os.path.isfile(path)):
+                    print(f'Drive {driveName} ignored, since file info CSV does not exist.')
+                    continue
                 fileList, df = __fetchFileInfoFromCsv(
                     path + '.csv', outputRoot, noMd5, sharedType, includeTrashed)
             else:

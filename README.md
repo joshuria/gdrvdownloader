@@ -57,7 +57,7 @@ Other approach to export Google Drive:
 
   6. Execute.
       ```sh
-          python gdexport.py -e gde -u <your account>
+          python gdexport.py -u <your account>
       ```
 
 ## Keywords Definition
@@ -70,7 +70,6 @@ Other approach to export Google Drive:
 ## All Options:
 
   - `-h`, `--help`: show simple help message.
-  - `-e gde`, `--engine gde`: **Required** export approach. Currently only support **gde**.
   - `-u <USER_ACCOUNT>`, `--user <USER_ACCOUNT>`: **Required** user account to export.
   - `-o <OUTPUT_ROOT_PATH>`, `--output <OUTPUT_ROOT_PATH>`: output root path. Default value is
       `./output`.  
@@ -78,15 +77,18 @@ Other approach to export Google Drive:
       > Exported files will put in `OUTPUT_ROOT_PATH/USER_ACCOUNT/Drive_Name`.
 
   - `--sharedType {shared, owned, both}`: specify shared files to export or not. This option is
-      ignored when fetching files from shared drives.
+      ignored when fetching files from shared drives. Default is **owned**.
       * **shared**: only export shared files, i.e. only files in *Shared with me* will be exported.
       * **owned**: only files owned by *<USER_ACCOUNT>* will be exported.
       * **both**: both shared and account owned files will be exported.
 
-      > Note that file shared by others will be put in
+      > **Note**: file shared by others will be put in
       `<OUTPUT_ROOT_PATH>/<USER_ACCOUNT>/<DRIVE_NAME>-Shared`.
 
-  - `--ignoreDrive DRIVE_A, DRIVE_B, ...`: drive name to be ignored. Use **MyDrive** for account
+      > **Warning**: this parameter is ignored when exporting shared drives due to limitation of
+      > Google Drive API.
+
+  - `--ignoreDrive DRIVE_A DRIVE_B ...`: drive name to be ignored. Use **MyDrive** for account
         personal drive (*My Drive* in Google drive page). This option is useful in GSuite, G2, or
         Google Workspace shared drives.
   - `--downloadOnly`: ignore fetching files from server and use previous fetched file info CSV.
@@ -111,7 +113,7 @@ Other approach to export Google Drive:
     **4** download jobs.
 
     ```sh
-        python gdexporter.py -e gde -u my.account@g2.school.edu -j4
+        python gdexporter.py -u my.account@g2.school.edu -j4
     ```
 
   * Download with shared files:
@@ -119,7 +121,7 @@ Other approach to export Google Drive:
     **4** download jobs.
 
     ```sh
-        python gdexporter.py -e gde -u my.account@g2.school.edu -j4 --sharedType both
+        python gdexporter.py -u my.account@g2.school.edu -j4 --sharedType both
     ```
 
   * Retry previous failed export:
@@ -127,7 +129,7 @@ Other approach to export Google Drive:
     **4** download jobs.
 
     ```sh
-        python gdexporter.py -e gde -u my.account@g2.school.edu --downloadOnly -j4
+        python gdexporter.py -u my.account@g2.school.edu --downloadOnly -j4
     ```
 
 # Implementation
