@@ -122,6 +122,7 @@ def __checkFile(
                 m = md5(path)
                 if m != file.md5:
                     data = __toDict(file, 'Download', 'Pending', 'MD5 not match')
+                    print(f'{file.name}: real: {m}, in csv: {file.md5}')
                     needDownload = True
                 else:
                     data = __toDict(file, 'Skip', 'OK', 'MD5 match')
@@ -395,12 +396,12 @@ def process(
                 continue
 
             if downloadOnly:
-                path = os.path.join(outputRoot, driveName)
+                path = os.path.join(outputRoot, driveName) + '.csv'
                 if (not os.path.exists(path)) or (not os.path.isfile(path)):
                     print(f'Drive {driveName} ignored, since file info CSV does not exist.')
                     continue
                 fileList, df = __fetchFileInfoFromCsv(
-                    path + '.csv', outputRoot, noMd5, sharedType, includeTrashed)
+                    path, outputRoot, noMd5, sharedType, includeTrashed)
             else:
                 fileList, folderTable = __fetchFileInfo(
                     client, driveId, driveName, includeTrashed, sharedType, cfg)

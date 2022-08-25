@@ -254,6 +254,7 @@ class Downloader:
         md5 = h.hexdigest()
         status.setComplete()
         if file.md5 and (md5 != file.md5):
+            os.unlink(path)
             return DownloadTaskResult(
                 file, False, 'MD5 not match', i, md5, None,
                 requestTime - startTime, downloadTime - requestTime)
