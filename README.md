@@ -34,9 +34,8 @@ Other approach to export Google Drive:
    
   2. Generate you own Google API credential for Google Drive.  
     We require the following region:
-      - `.../auth/userinfo.email`
-      - `.../auth/drive.metadata.readonly`
-      - `.../auth/drive.readonly`
+      - https://www.googleapis.com/auth/drive.metadata.readonly
+      - https://www.googleapis.com/auth/drive.readonly
 
   3. Download the API credential, rename to `client_secrets.json`, save to repository root folder.
 
